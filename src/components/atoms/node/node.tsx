@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 
-import { NodeProps } from './node-interfaces';
+import { NodeProps } from '../../../utils/interfaces/node-interfaces';
+import './node.scss';
 
 export const Node: React.FC<NodeProps> = (props => {
     const {
@@ -8,28 +9,41 @@ export const Node: React.FC<NodeProps> = (props => {
         isFinish,
         isStart,
         isWall,
-        onMouseDown,
-        onMouseEnter,
-        onMouseUp,
+        isShortestPath,
+        isVisited,
+        onClick,
+        mouseEnter,
+        mouseUp,
         row
     } = props;
-    const actionDown = useCallback(():any => { onMouseDown() }, [col, row]);
-    const actionEnter = useCallback(():any => { onMouseEnter() }, [col, row]);
-    const actionUp = useCallback(():any => { onMouseUp() }, []);
+    const memoMouseDown = useCallback(e => {
+        onClick(e, col, row);
+    }, [row, col, onClick]);
+    const memoMouseEnter = useCallback(e => {
+        mouseEnter(e, col, row);
+    }, [row, col, mouseEnter]);
+    const memoMouseUp = useCallback(e => {
+        mouseUp(e);
+    }, [mouseUp])
+    
+
     const className = ():string => {
-        return 'node ' + isFinish ? 'node-end' :
+        const calc = isFinish ? 'node-end' :
             isStart ? 'node-start' :
-            isWall ? 'node-wall': '';
+            isWall ? 'node-wall':
+            isVisited && !isShortestPath ? 'node-visited':
+            isVisited && isShortestPath ? 'node-shortest-path' : '';
+
+        return 'node ' + calc;
     };
 
-
     return (
-        <button
+        <div
+            onMouseDown={memoMouseDown}
+            onMouseEnter={memoMouseEnter}
+            onMouseUp={memoMouseUp}
             id={`node-${row}-${col}`}
             className={className()}
-            onMouseDown={actionDown()}
-            onMouseEnter={actionEnter()}
-            onMouseUp={actionUp()}
-        ></button>
+        ></div>
     );
 });
